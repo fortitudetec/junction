@@ -22,7 +22,7 @@ export default React.createClass({
     return {
       show: false,
       showCloseButton: false,
-      queries: this.props.queries.map((this._doot)),
+      queries: this.props.queries.map((this._createQueryComponent)),
       id: this.props.id,
       selectedTable: null,
       tables: ['Table1', 'Table2', 'Table3']
@@ -34,11 +34,11 @@ export default React.createClass({
   
   componentWillReceiveProps ( newProps ) {
     let state = this.state;
-    state.queries = newProps.queries.map(this._doot);
+    state.queries = newProps.queries.map(this._createQueryComponent);
     this.setState(state);
   },
   
-  _doot ( query ) {
+  _createQueryComponent ( query ) {
     let component = null;
     
     switch ( query.type ) {
@@ -76,34 +76,6 @@ export default React.createClass({
   
   addQuery ( type ) {
     DispatcherAction(Actions.NEW_QUERY, { queryGroupId: this.props.id, type: type });
-    // let state = this.state;
-    // let key = _uniqueId();
-    // let component = null;
-    
-    // switch ( type ) {
-    // case "text":
-    //   component = (
-    //     <QueryForm key={key} id={key} />
-    //   );
-    //   break;
-    // case "date":
-    //   component = (
-    //     <DatePicker key={key} />
-    //   );
-    //   break;
-    // case "geo":
-    //   component = (
-    //     <GeoQuery onChange={this.geoQueryChange} key={key} />
-    //   );
-    //   break;
-    // default:
-    //   break;
-    // }
-    
-    // if ( component ) {
-    //   state.queries.push(component);
-    //   this.setState(state);
-    // }
   }, 
   
   removeQuery ( query ) {
@@ -111,12 +83,6 @@ export default React.createClass({
       queryGroupId: this.state.id,
       id: query.key
     });
-    // let state = this.state;
-    // state.queries = state.queries.filter(function ( el ) {
-    //   return el.key !== id;
-    // });
-    
-    // this.setState(state);
   },
   
   _removeQueryGroup ( ) {
