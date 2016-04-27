@@ -5,33 +5,11 @@ import semanticUI from '../react-semantic';
 export default React.createClass({
   
   propTypes: {
-    onChange: React.PropTypes.func
+    onChange: React.PropTypes.func,
+    bounds: React.PropTypes.object
   },
   
   componentDidMount ( ) {
-    // let dom = $(ReactDOM.findDOMNode(this));
-    // dom.form({
-    //   on: 'blur',
-    //   fields: {
-    //     regex: {
-    //       identifier: 'swlat',
-    //       rules: [
-    //         {
-    //           type: 'regExp[/(^-?[0-9](\.\d+)*$)|(^-?[1-8][0-9](\.\d+)*$)|(^-?90(\.0+)*)$/]'
-    //         }
-    //       ]
-    //     },
-    //     swlng: {
-    //       identifier: 'swlng',
-    //       rules: [
-    //         {
-    //           type: 'decimal',
-    //           prompt: 'Soutwest longitude must be a decimal'
-    //         }
-    //       ]
-    //     }
-    //   }
-    // })
   },
   
   _validateLatitude ( value ) {
@@ -39,7 +17,6 @@ export default React.createClass({
   },
   
   didChange ( event ) {    
-    // let dom = $(ReactDOM.findDOMNode(this)).form('add errors', ["one", "two"]);
   },
   
   render ( ) {
