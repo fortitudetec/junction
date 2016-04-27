@@ -1,0 +1,9 @@
+.DS_Store
+node_modules/
+typings/
+typings.json
+*.swp
+dist/*
+!dist/index.html
+!dist/vendor
+coverage/
