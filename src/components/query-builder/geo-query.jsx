@@ -25,7 +25,7 @@ export default React.createClass({
         <div className="field">
           <label>Southwest Corner</label>
           <div className="two fields">
-            <input type="text" placeholder="Latitude" name="swlat" onChange={this.didChange} />
+            <input type="text" placeholder="Latitude" name="swlat" />
             <input type="text" placeholder="Longitude" name="swlng" />
           </div>
         </div>
