@@ -8,6 +8,40 @@ require('!style!css!leaflet-draw/dist/leaflet.draw.css');
 
 export default React.createClass({
   
+  propTypes: {
+    /*
+    Rectangle should be object that looks like:
+    {
+      id: id,
+      sw: {lat: 'swlat', lng: 'swlng'}
+      ne: {lat: 'nelat', lng: 'nelng'}
+    }
+    */
+    rectangles: React.PropTypes.array
+  },
+  
+  getInitialState ( ) {
+    
+    return {
+      rectangles: this.props.rectangles ? this.props.rectangles.map(this._createRectangleLayer) : []
+    };
+  },
+  
+  _createRectangleLayer ( rectangle ) {
+    const bounds = [[rectangle.sw.lat, rectangle.sw.lng], [rectangle.ne.lat, rectangle.ne.lng]];
+    return L.rectangle(bounds);
+  },
+  
+  componentWillReceiveProps ( newProps ) {
+    let state = this.state;
+
+    if ( newProps.rectangles ) {
+      state.rectangles = newProps.rectangles.map(this._createRectangleLayer);
+    }
+    
+    this.setState(state);
+  },
+  
   componentDidMount ( ) {
     L.mapbox.accessToken = 'pk.eyJ1IjoicHNjaG1lcmdlIiwiYSI6ImNpbWNtZ2ZjeTAwMTh0aWx2bG02bzgycXEifQ.MjkqAnyv1sXIxlOeTAkZKQ';
     var map = L.mapbox.map(ReactDOM.findDOMNode(this), 'mapbox.streets', { zoomControl: false }).setView([40, -74.50], 9);
@@ -51,6 +85,7 @@ export default React.createClass({
     });
     
     this.map = map;
+    this.drawnShapeFeatureGroup = drawnItems;
     this.map.invalidateSize();
   },
   
@@ -63,6 +98,14 @@ export default React.createClass({
       width: "100%", 
       height: this.props.height 
     };
+    
+    if ( this.drawnShapeFeatureGroup ) {
+      this.drawnShapeFeatureGroup.clearLayers();
+    }
+    
+    this.state.rectangles.forEach((rectangle) => {
+      this.drawnShapeFeatureGroup.addLayer(rectangle);
+    });
     
     return <div className='map' style={divStyle}></div>;
   }

@@ -24,6 +24,7 @@ const App = React.createClass({
     getInitialState ( ) {
       return {
         queries: [],
+        rectangles: [],
         windowHeight: window.innerHeight
       };
     },
@@ -45,7 +46,7 @@ const App = React.createClass({
       this._queryStore.addListener(Actions.NEW_QUERY_GROUP, this._updateQueryGroups);
       this._queryStore.addListener(Actions.REMOVE_QUERY_GROUP, this._updateQueryGroups);
       this._queryStore.addListener(Actions.NEW_GEO_QUERY_SHAPE, this._updateQueryGroups);
-      
+      this._queryStore.addListener(Actions.SHOW_RECTANGLE, this._addRectangleToMap);
       // create a default query when the component loads
       this._newQueryGroup();
     },
@@ -70,6 +71,12 @@ const App = React.createClass({
     
     _newQueryGroup ( ) {
       DispatcherAction(Actions.NEW_QUERY_GROUP, null);
+    },
+    
+    _addRectangleToMap ( rectangle ) {
+      let state = this.state;
+      state.rectangles.push(rectangle);
+      this.setState(state);
     },
     
     _validateText ( object, event ) {
@@ -154,7 +161,7 @@ const App = React.createClass({
           </div>
           
           <div className="twelve wide column no-left-padding">
-            <Map height={this.state.windowHeight} />
+            <Map height={this.state.windowHeight} rectangles={this.state.rectangles} />
           </div>
         
         </div>

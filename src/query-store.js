@@ -67,11 +67,19 @@ class QueryStore extends EventEmitter {
         
       case Actions.NEW_GEO_QUERY_SHAPE:
         const bounds = payload.data.bounds;
+        const shapeId = _uniqueId();
+        
         self._queryGroups.forEach((queryGroup) => {
-          queryGroup.queries.push({id: _uniqueId, type: "geo", bounds: bounds});
+          queryGroup.queries.push({id: _uniqueId, shapeId: shapeId, type: "geo", bounds: bounds});
         });
         
         self.emit(payload.actionType, self._queryGroups);
+        self.emit(Actions.SHOW_RECTANGLE, {
+          id: shapeId, 
+          sw: bounds.sw,
+          ne: bounds.ne
+        });
+        
         break;
         
       default:
