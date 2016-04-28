@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Mapbox from 'mapbox.js';
+import {Actions, DispatcherAction} from '../actions';
 
 require('leaflet-draw');
 require('!style!css!leaflet-draw/dist/leaflet.draw.css');
@@ -33,7 +34,20 @@ export default React.createClass({
     map.addControl(drawControl);
     
     map.on('draw:created', (e) => {
-      console.log("done drawed");
+      const layer = e.layer;
+
+      const bounds = {
+        sw: {
+          lat: layer.getBounds()._southWest.lat,
+          lng: layer.getBounds()._southWest.lng
+        },
+        ne: {
+          lat: layer.getBounds()._northEast.lat,
+          lng: layer.getBounds()._northEast.lng
+        }
+      }
+
+      DispatcherAction(Actions.NEW_GEO_QUERY_SHAPE, { bounds: bounds });
     });
     
     this.map = map;

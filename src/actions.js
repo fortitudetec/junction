@@ -7,6 +7,7 @@ export const Actions = {
   QUERY_CHANGED: "QUERY_CHANGED",
   REMOVE_QUERY_GROUP: "REMOVE_QUERY_GROUP",
   NEW_QUERY_GROUP: "NEW_QUERY_GROUP",
+  NEW_GEO_QUERY_SHAPE: "NEW_MAP_SHAPE"
 };
 
 export const ButtonClickedAction = (userData) => {

@@ -54,11 +54,7 @@ class QueryStore extends EventEmitter {
         break;
         
       case Actions.NEW_QUERY_GROUP:
-        self._queryGroups.push({
-          queryGroupId: _uniqueId(),
-          queries: []
-        });
-        
+        self.createQueryGroup();        
         self.emit(payload.actionType, self._queryGroups);
         break;
         
@@ -69,9 +65,25 @@ class QueryStore extends EventEmitter {
         // self.emit(payload.actionType, se)
         break;
         
+      case Actions.NEW_GEO_QUERY_SHAPE:
+        const bounds = payload.data.bounds;
+        self._queryGroups.forEach((queryGroup) => {
+          queryGroup.queries.push({id: _uniqueId, type: "geo", bounds: bounds});
+        });
+        
+        self.emit(payload.actionType, self._queryGroups);
+        break;
+        
       default:
         break;
       }
+    });
+  }
+  
+  createQueryGroup ( ) {
+    this._queryGroups.push({
+      queryGroupId: _uniqueId(),
+      queries: []
     });
   }
   
