@@ -36,23 +36,27 @@ export default React.createClass({
   },
   
   boundsFromProps ( boundsObject ) {
-    let swLat = '';
-    let swLng = '';
-    let neLat = '';
-    let neLng = '';
-    let {sw, ne} = boundsObject;
-    
-    if ( sw ) {
-      swLat = sw.lat ? sw.lat : '';
-      swLng = sw.lng ? sw.lng : '';
+    if ( boundsObject ) {
+      let swLat = '';
+      let swLng = '';
+      let neLat = '';
+      let neLng = '';
+      let {sw, ne} = boundsObject;
+      
+      if ( sw ) {
+        swLat = sw.lat ? sw.lat : '';
+        swLng = sw.lng ? sw.lng : '';
+      }
+      
+      if ( ne ) {
+        neLat = ne.lat ? ne.lat : '';
+        neLng = ne.lng ? ne.lng : '';
+      }
+      
+      return { swLat: swLat, swLng: swLng, neLat: neLat, neLng: neLng };
     }
     
-    if ( ne ) {
-      neLat = ne.lat ? ne.lat : '';
-      neLng = ne.lng ? ne.lng : '';
-    }
-    
-    return { swLat: swLat, swLng: swLng, neLat: neLat, neLng: neLng };
+    return { sw: { lat: '', lng: '' }, ne: { lat: '', lng: '' } };
   },
   
   render ( ) { 

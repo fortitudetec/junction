@@ -1,5 +1,4 @@
 import React from 'react';
-import Button from '../button';
 import {Actions, DispatcherAction} from '../../actions';
 
 export default React.createClass({

@@ -62,13 +62,16 @@
     ],
     "moduleFileExtensions": [
       "js",
-      "json"
+      "json",
+      "jsx"
     ],
     "unmockedModulePathPatterns": [
       "<rootDir>/node_modules/react",
       "<rootDir>/node_modules/react-dom",
       "<rootDir>/node_modules/react-addons-test-utils",
-      "<rootDir>/node_modules/jquery"
+      "<rootDir>/node_modules/jquery",
+      "<rootDir>/node_modules/mapbox.js",
+      "<rootDir>/node_modules/lodash"
     ],
     "verbose": true
   },

@@ -18,7 +18,9 @@ describe('QueryStore', () => {
   let queryStore;
   
   beforeEach(() => {
-    queryStore = new QueryStore();
+    queryStore = QueryStore;
+    QueryStore.reset();
+    QueryStore.removeAllListeners();
   });
   
   describe('query groups', ( ) => {

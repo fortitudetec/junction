@@ -1,5 +1,4 @@
 import React from 'react';
-import { Actions, ButtonClickedAction } from './actions';
 
 export default React.createClass({
   render ( ) {

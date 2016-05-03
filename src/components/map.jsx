@@ -2,12 +2,15 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Mapbox from 'mapbox.js';
 import {Actions, DispatcherAction} from '../actions';
+import QueryStore from "../query-store";
 
 require('leaflet-draw');
 require('!style!css!leaflet-draw/dist/leaflet.draw.css');
 
 export default React.createClass({
   
+  //*****************************************************************************
+  //*****************************************************************************
   propTypes: {
     /*
     Rectangle should be object that looks like:
@@ -20,18 +23,23 @@ export default React.createClass({
     rectangles: React.PropTypes.array
   },
   
+  //*****************************************************************************
+  //*****************************************************************************
   getInitialState ( ) {
-    
     return {
       rectangles: this.props.rectangles ? this.props.rectangles.map(this._createRectangleLayer) : []
     };
   },
   
+  //*****************************************************************************
+  //*****************************************************************************
   _createRectangleLayer ( rectangle ) {
     const bounds = [[rectangle.sw.lat, rectangle.sw.lng], [rectangle.ne.lat, rectangle.ne.lng]];
-    return L.rectangle(bounds);
+    return { id: rectangle.id, layer: L.rectangle(bounds) };
   },
   
+  //*****************************************************************************
+  //*****************************************************************************
   componentWillReceiveProps ( newProps ) {
     let state = this.state;
 
@@ -42,7 +50,32 @@ export default React.createClass({
     this.setState(state);
   },
   
+  //*****************************************************************************
+  //*****************************************************************************
+  _addRectangleToMap ( rectangle ) {
+    let state = this.state;
+    state.rectangles.push(this._createRectangleLayer(rectangle));
+    this.setState(state);
+  },
+  
+  _removeRectangleFromMap ( rect ) {
+    let state = this.state;
+        
+    state.rectangles = state.rectangles.filter((rectangle) => {
+      return rectangle.id !== rect.id;
+    });
+    
+    this.setState(state);
+  },
+  
+  //*****************************************************************************
+  //*****************************************************************************
   componentDidMount ( ) {
+    
+    this._queryStore = QueryStore;
+    this._queryStore.addListener(Actions.SHOW_RECTANGLE, this._addRectangleToMap);
+    this._queryStore.addListener(Actions.REMOVE_RECTANGLE, this._removeRectangleFromMap);
+    
     L.mapbox.accessToken = 'pk.eyJ1IjoicHNjaG1lcmdlIiwiYSI6ImNpbWNtZ2ZjeTAwMTh0aWx2bG02bzgycXEifQ.MjkqAnyv1sXIxlOeTAkZKQ';
     var map = L.mapbox.map(ReactDOM.findDOMNode(this), 'mapbox.streets', { zoomControl: false }).setView([40, -74.50], 9);
     new L.Control.Zoom({ position: 'topright' }).addTo(map);
@@ -89,10 +122,14 @@ export default React.createClass({
     this.map.invalidateSize();
   },
   
+  //*****************************************************************************
+  //*****************************************************************************
   componentDidUpdate ( ) {
     this.map.invalidateSize();
   },
   
+  //*****************************************************************************
+  //*****************************************************************************
   render ( ) {
     let divStyle = {  
       width: "100%", 
@@ -104,9 +141,10 @@ export default React.createClass({
     }
     
     this.state.rectangles.forEach((rectangle) => {
-      this.drawnShapeFeatureGroup.addLayer(rectangle);
+      this.drawnShapeFeatureGroup.addLayer(rectangle.layer);
     });
     
     return <div className='map' style={divStyle}></div>;
   }
+  
 });
