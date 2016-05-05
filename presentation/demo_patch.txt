@@ -1,0 +1,185 @@
+diff --git a/src/actions.js b/src/actions.js
+index 7556216..76e5db8 100644
+--- a/src/actions.js
++++ b/src/actions.js
+@@ -7,6 +7,7 @@ export const Actions = {
+   QUERY_CHANGED: "QUERY_CHANGED",
+   REMOVE_QUERY_GROUP: "REMOVE_QUERY_GROUP",
+   NEW_QUERY_GROUP: "NEW_QUERY_GROUP",
++  NEW_GEO_QUERY_SHAPE: "NEW_MAP_SHAPE"
+ };
+ 
+ export const ButtonClickedAction = (userData) => {
+diff --git a/src/app.jsx b/src/app.jsx
+index febbb31..753bd7f 100644
+--- a/src/app.jsx
++++ b/src/app.jsx
+@@ -44,6 +44,7 @@ const App = React.createClass({
+       this._queryStore.addListener(Actions.REMOVE_QUERY, this._updateQueryGroups);
+       this._queryStore.addListener(Actions.NEW_QUERY_GROUP, this._updateQueryGroups);
+       this._queryStore.addListener(Actions.REMOVE_QUERY_GROUP, this._updateQueryGroups);
++      this._queryStore.addListener(Actions.NEW_GEO_QUERY_SHAPE, this._updateQueryGroups);
+       
+       // create a default query when the component loads
+       this._newQueryGroup();
+diff --git a/src/components/map.jsx b/src/components/map.jsx
+index 6ec1920..c0d8951 100644
+--- a/src/components/map.jsx
++++ b/src/components/map.jsx
+@@ -1,6 +1,7 @@
+ import React from 'react';
+ import ReactDOM from 'react-dom';
+ import Mapbox from 'mapbox.js';
++import {Actions, DispatcherAction} from '../actions';
+ 
+ require('leaflet-draw');
+ require('!style!css!leaflet-draw/dist/leaflet.draw.css');
+@@ -33,7 +34,20 @@ export default React.createClass({
+     map.addControl(drawControl);
+     
+     map.on('draw:created', (e) => {
+-      console.log("done drawed");
++      const layer = e.layer;
++
++      const bounds = {
++        sw: {
++          lat: layer.getBounds()._southWest.lat,
++          lng: layer.getBounds()._southWest.lng
++        },
++        ne: {
++          lat: layer.getBounds()._northEast.lat,
++          lng: layer.getBounds()._northEast.lng
++        }
++      }
++
++      DispatcherAction(Actions.NEW_GEO_QUERY_SHAPE, { bounds: bounds });
+     });
+     
+     this.map = map;
+diff --git a/src/components/query-builder/geo-query.jsx b/src/components/query-builder/geo-query.jsx
+index c0db9a6..205dadd 100644
+--- a/src/components/query-builder/geo-query.jsx
++++ b/src/components/query-builder/geo-query.jsx
+@@ -19,22 +19,58 @@ export default React.createClass({
+   didChange ( event ) {    
+   },
+   
+-  render ( ) {
++  getInitialState ( ) {
++    const bounds = this.boundsFromProps(this.props.bounds);
++    return {
++      swLat: bounds.swLat,
++      swLng: bounds.swLng,
++      neLat: bounds.neLat, 
++      neLng: bounds.neLng
++    }
++  },
++  
++  componentWillReceiveProps ( newProps ) {
++    let state = this.state;
++    state.bounds = this.boundsFromProps(newProps.bounds);
++    this.setState(state);
++  },
++  
++  boundsFromProps ( boundsObject ) {
++    let swLat = '';
++    let swLng = '';
++    let neLat = '';
++    let neLng = '';
++    let {sw, ne} = boundsObject;
++    
++    if ( sw ) {
++      swLat = sw.lat ? sw.lat : '';
++      swLng = sw.lng ? sw.lng : '';
++    }
++    
++    if ( ne ) {
++      neLat = ne.lat ? ne.lat : '';
++      neLng = ne.lng ? ne.lng : '';
++    }
++    
++    return { swLat: swLat, swLng: swLng, neLat: neLat, neLng: neLng };
++  },
++  
++  render ( ) { 
+     return (
+       <div className="ui form">
+         <div className="field">
+           <label>Southwest Corner</label>
+           <div className="two fields">
+-            <input type="text" placeholder="Latitude" name="swlat" />
+-            <input type="text" placeholder="Longitude" name="swlng" />
++            <input type="text" placeholder="Latitude" name="swlat" defaultValue={this.state.swLat} />
++            <input type="text" placeholder="Longitude" name="swlng" defaultValue={this.state.swLng} />
+           </div>
+         </div>
+         
+         <div className="field">
+           <label>Northeast Corner</label>
+           <div className="two fields">
+-            <input type="text" placeholder="Latitude" />
+-            <input type="text" placeholder="Longitude" />
++            <input type="text" placeholder="Latitude"  defaultValue={this.state.neLat} />
++            <input type="text" placeholder="Longitude" defaultValue={this.state.neLng} />
+           </div>
+         </div>
+         <div className="ui error message"></div>
+diff --git a/src/components/query-group.jsx b/src/components/query-group.jsx
+index 074fc4a..6bf4989 100644
+--- a/src/components/query-group.jsx
++++ b/src/components/query-group.jsx
+@@ -54,7 +54,7 @@ export default React.createClass({
+       break;
+     case "geo":
+       component = (
+-        <GeoQuery onChange={this.geoQueryChange} key={query.id} id={query.id} queryGroupId={this.props.id} />
++        <GeoQuery onChange={this.geoQueryChange} key={query.id} id={query.id} queryGroupId={this.props.id} bounds={query.bounds} />
+       );
+       break;
+     default:
+diff --git a/src/query-store.js b/src/query-store.js
+index a26ce17..f1fb8b8 100644
+--- a/src/query-store.js
++++ b/src/query-store.js
+@@ -54,11 +54,7 @@ class QueryStore extends EventEmitter {
+         break;
+         
+       case Actions.NEW_QUERY_GROUP:
+-        self._queryGroups.push({
+-          queryGroupId: _uniqueId(),
+-          queries: []
+-        });
+-        
++        self.createQueryGroup();        
+         self.emit(payload.actionType, self._queryGroups);
+         break;
+         
+@@ -69,12 +65,28 @@ class QueryStore extends EventEmitter {
+         // self.emit(payload.actionType, se)
+         break;
+         
++      case Actions.NEW_GEO_QUERY_SHAPE:
++        const bounds = payload.data.bounds;
++        self._queryGroups.forEach((queryGroup) => {
++          queryGroup.queries.push({id: _uniqueId, type: "geo", bounds: bounds});
++        });
++        
++        self.emit(payload.actionType, self._queryGroups);
++        break;
++        
+       default:
+         break;
+       }
+     });
+   }
+   
++  createQueryGroup ( ) {
++    this._queryGroups.push({
++      queryGroupId: _uniqueId(),
++      queries: []
++    });
++  }
++  
+   findQueryGroupById ( id ) {    
+     for ( const idx in this._queryGroups ) {
+       const qg = this._queryGroups[idx];

@@ -1,0 +1,98 @@
+===========
+src/actions
+===========
+
+NEW_GEO_QUERY_SHAPE: "NEW_MAP_SHAPE"
+
+======================
+src/components/map.jsx
+======================
+
+import {Actions, DispatcherAction} from '../actions';
+
+      const layer = e.layer;
+
+      const bounds = {
+        sw: {
+          lat: layer.getBounds()._southWest.lat,
+          lng: layer.getBounds()._southWest.lng
+        },
+        ne: {
+          lat: layer.getBounds()._northEast.lat,
+          lng: layer.getBounds()._northEast.lng
+        }
+      }
+
+      DispatcherAction(Actions.NEW_GEO_QUERY_SHAPE, { bounds: bounds });
+
+==============================
+src/components/query-store.jsx
+==============================
+      case Actions.NEW_GEO_QUERY_SHAPE:
+        const bounds = payload.data.bounds;
+        self._queryGroups.forEach((queryGroup) => {
+          queryGroup.queries.push({id: _uniqueId, type: "geo", bounds: bounds});
+        });
+        
+        self.emit(payload.actionType, self._queryGroups);
+        break;
+        
+=======
+app.jsx
+=======
+this._queryStore.addListener(Actions.NEW_GEO_QUERY_SHAPE, this._updateQueryGroups);
+
+==============================
+src/components/query-group.jsx
+==============================
+<GeoQuery onChange={this.geoQueryChange} key={query.id} id={query.id} queryGroupId={this.props.id} bounds={query.bounds} />
+
+======================================
+src/components/query-builder/geo-query
+======================================
+
+  getInitialState ( ) {
+    const bounds = this.boundsFromProps(this.props.bounds);
+    return {
+      swLat: bounds.swLat,
+      swLng: bounds.swLng,
+      neLat: bounds.neLat, 
+      neLng: bounds.neLng
+    }
+  },
+  
+  componentWillReceiveProps ( newProps ) {
+    let state = this.state;
+    state.bounds = this.boundsFromProps(newProps.bounds);
+    this.setState(state);
+  },
+  
+  boundsFromProps ( boundsObject ) {
+    let swLat = '';
+    let swLng = '';
+    let neLat = '';
+    let neLng = '';
+    let {sw, ne} = boundsObject;
+    
+    if ( sw ) {
+      swLat = sw.lat ? sw.lat : '';
+      swLng = sw.lng ? sw.lng : '';
+    }
+    
+    if ( ne ) {
+      neLat = ne.lat ? ne.lat : '';
+      neLng = ne.lng ? ne.lng : '';
+    }
+    
+    return { swLat: swLat, swLng: swLng, neLat: neLat, neLng: neLng };
+  },
+  
+  render ( ) { 
+
+
+<input type="text" placeholder="Latitude" name="swlat" defaultValue={this.state.swLat} />
+<input type="text" placeholder="Longitude" name="swlng" defaultValue={this.state.swLng} />
+
+<input type="text" placeholder="Latitude"  defaultValue={this.state.neLat} />
+<input type="text" placeholder="Longitude" defaultValue={this.state.neLng} />
+
