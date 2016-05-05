@@ -158,3 +158,10 @@ JavaScript classes / React components can register to receive relevant events.
 ---
 
 ## A Little Code...
+
+--- 
+
+## References
+- ### Code and presentation available at [https://github.com/fortitudetec/junction](https://github.com/fortitudetec/junction)
+- ### [React Github Page](https://facebook.github.io/react/)
+- ### [Webpack Github Page](https://webpack.github.io)
