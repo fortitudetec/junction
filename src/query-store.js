@@ -35,16 +35,7 @@ class QueryStore extends EventEmitter {
         self.emit(payload.actionType, self._queryGroups);
         break;
       case Actions.REMOVE_QUERY:
-        const removedQuery = self.removeQuery(payload.data.queryGroupId, payload.data.id);
-        
-        if ( removedQuery && removedQuery.shapeId ) {
-          const shapes = self.queriesWithShape(removedQuery.shapeId)
-          if ( shapes.length === 0 ) {
-            self.removeShape(removedQuery.shapeId);
-          }
-        }
-        
-        self.emit(payload.actionType, self._queryGroups);
+        self.processRemoveQueryAction(payload.data.queryGroupId, payload.data.id);
         break;
         
       case Actions.REMOVE_QUERY_GROUP:
@@ -72,7 +63,7 @@ class QueryStore extends EventEmitter {
         const shapeId = _uniqueId();
         
         self._queryGroups.forEach((queryGroup) => {
-          queryGroup.queries.push({id: _uniqueId(), shapeId: shapeId, type: "geo", bounds: bounds});
+          queryGroup.queries.push({id: _uniqueId(), queryGroupId: queryGroup.queryGroupId, shapeId: shapeId, type: "geo", bounds: bounds});
         });
         
         self.emit(payload.actionType, self._queryGroups);
@@ -82,6 +73,10 @@ class QueryStore extends EventEmitter {
           ne: bounds.ne
         });
         
+        break;
+        
+      case Actions.HIGHLIGHT_RECTANGLE:
+        self.emit(payload.actionType, payload.data);
         break;
         
       default:
@@ -166,6 +161,58 @@ class QueryStore extends EventEmitter {
     }
     
     return [];
+  }
+  
+  //*****************************************************************************
+  //*****************************************************************************
+  processRemoveQueryAction ( queryGroupId, id ) {
+    
+    if ( queryGroupId ) {
+      this.removeQueryAndShape(queryGroupId, id);
+      // const removedQuery = this.removeQuery(queryGroupId, id);
+          
+      //   if ( removedQuery && removedQuery.shapeId ) {
+      //     const shapes = this.queriesWithShape(removedQuery.shapeId)
+      //     if ( shapes.length === 0 ) {
+      //       this.removeShape(removedQuery.shapeId);
+      //     }
+      //   }
+        
+      //   this.emit(payload.actionType, self._queryGroups);
+    }
+    else {
+      // get the queries from all the query groups
+      const queriesToRemove = this._queryGroups.map((qg) => {
+        return qg.queries;
+      })
+      // result is an array of arrays, flatten it
+      .reduce((aggregate, queries) => {
+        return aggregate.concat(queries);
+      }, [])
+      // find just the queries we need to remove
+      .filter((query) => {
+        return query.shapeId === id;
+      });
+      
+      queriesToRemove.forEach((query) => { 
+        this.removeQueryAndShape(query.queryGroupId, query.id); 
+      });
+    }
+  }
+  
+  //*****************************************************************************
+  //*****************************************************************************
+  removeQueryAndShape ( queryGroupId, id ) {
+    const removedQuery = this.removeQuery(queryGroupId, id);
+      
+    if ( removedQuery && removedQuery.shapeId ) {
+      const shapes = this.queriesWithShape(removedQuery.shapeId)
+      if ( shapes.length === 0 ) {
+        this.removeShape(removedQuery.shapeId);
+      }
+    }
+    
+    this.emit(Actions.REMOVE_QUERY, this._queryGroups);
   }
   
   //*****************************************************************************

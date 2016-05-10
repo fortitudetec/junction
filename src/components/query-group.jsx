@@ -54,7 +54,7 @@ export default React.createClass({
       break;
     case "geo":
       component = (
-        <GeoQuery onChange={this.geoQueryChange} key={query.id} id={query.id} queryGroupId={this.props.id} bounds={query.bounds} />
+        <GeoQuery onChange={this.geoQueryChange} key={query.id} id={query.id} queryGroupId={this.props.id} bounds={query.bounds} shapeId={query.shapeId} />
       );
       break;
     default:

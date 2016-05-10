@@ -35,7 +35,7 @@ const Queries = React.createClass({
     // create a default query when the component loads
     this._newQueryGroup();
   },
-  
+
   //*****************************************************************************
   //*****************************************************************************
   componentWillUnmount ( ) {

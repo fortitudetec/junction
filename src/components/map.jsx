@@ -20,22 +20,39 @@ export default React.createClass({
       ne: {lat: 'nelat', lng: 'nelng'}
     }
     */
-    rectangles: React.PropTypes.array
+    rectangles: React.PropTypes.array,
+    
+    // array of shapeIds to highlight
+    highlighted: React.PropTypes.array
   },
   
   //*****************************************************************************
   //*****************************************************************************
   getInitialState ( ) {
     return {
-      rectangles: this.props.rectangles ? this.props.rectangles.map(this._createRectangleLayer) : []
+      rectangles: this.props.rectangles.map((rect) => {
+        return this._createRectangleLayer(rect, this.props.highlighted);
+      }),
+      highlighted: this.props.highlighted
     };
   },
   
   //*****************************************************************************
   //*****************************************************************************
-  _createRectangleLayer ( rectangle ) {
+  getDefaultProps ( ) {
+    return {
+      rectangles: [],
+      highlighted: []
+    }
+  },
+  
+  //*****************************************************************************
+  //*****************************************************************************
+  _createRectangleLayer ( rectangle, highlightedRectangles ) {
     const bounds = [[rectangle.sw.lat, rectangle.sw.lng], [rectangle.ne.lat, rectangle.ne.lng]];
-    return { id: rectangle.id, layer: L.rectangle(bounds) };
+    // when a shape is highlighted, give the lines a heavier weight
+    const weight = (highlightedRectangles.indexOf(rectangle.id) >= 0) ? 5 : 1;
+    return { id: rectangle.id, layer: L.rectangle(bounds, {weight: weight}) };
   },
   
   //*****************************************************************************
@@ -44,7 +61,9 @@ export default React.createClass({
     let state = this.state;
 
     if ( newProps.rectangles ) {
-      state.rectangles = newProps.rectangles.map(this._createRectangleLayer);
+      state.rectangles = newProps.rectangles.map((rect) => {
+        return this._createRectangleLayer(rect, newProps.highlighted);
+      });
     }
     
     this.setState(state);
@@ -52,30 +71,8 @@ export default React.createClass({
   
   //*****************************************************************************
   //*****************************************************************************
-  _addRectangleToMap ( rectangle ) {
-    let state = this.state;
-    state.rectangles.push(this._createRectangleLayer(rectangle));
-    this.setState(state);
-  },
-  
-  _removeRectangleFromMap ( rect ) {
-    let state = this.state;
-        
-    state.rectangles = state.rectangles.filter((rectangle) => {
-      return rectangle.id !== rect.id;
-    });
-    
-    this.setState(state);
-  },
-  
-  //*****************************************************************************
-  //*****************************************************************************
   componentDidMount ( ) {
-    
-    this._queryStore = QueryStore;
-    this._queryStore.addListener(Actions.SHOW_RECTANGLE, this._addRectangleToMap);
-    this._queryStore.addListener(Actions.REMOVE_RECTANGLE, this._removeRectangleFromMap);
-    
+
     L.mapbox.accessToken = 'pk.eyJ1IjoicHNjaG1lcmdlIiwiYSI6ImNpbWNtZ2ZjeTAwMTh0aWx2bG02bzgycXEifQ.MjkqAnyv1sXIxlOeTAkZKQ';
     var map = L.mapbox.map(ReactDOM.findDOMNode(this), 'mapbox.streets', { zoomControl: false }).setView([40, -74.50], 9);
     new L.Control.Zoom({ position: 'topright' }).addTo(map);
@@ -115,6 +112,18 @@ export default React.createClass({
       }
 
       DispatcherAction(Actions.NEW_GEO_QUERY_SHAPE, { bounds: bounds });
+    });
+    
+    map.on('draw:deleted', (e) => {
+      e.layers.eachLayer((layer) => {
+        const matchingLayers = this.state.rectangles.filter((rectangle) => {
+          return rectangle.layer._leaflet_id === layer._leaflet_id;
+        });
+        
+        matchingLayers.forEach((layerToDelete) => {
+          DispatcherAction(Actions.REMOVE_QUERY, { id: layerToDelete.id });
+        });
+      });
     });
     
     this.map = map;

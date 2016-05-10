@@ -9,36 +9,9 @@ export const Actions = {
   NEW_QUERY_GROUP: "NEW_QUERY_GROUP",
   NEW_GEO_QUERY_SHAPE: "NEW_GEO_QUERY_SHAPE",
   SHOW_RECTANGLE: "SHOW_RECTANGLE",
-  REMOVE_RECTANGLE: "REMOVE_RECTANGLE"
+  REMOVE_RECTANGLE: "REMOVE_RECTANGLE",
+  HIGHLIGHT_RECTANGLE: "HIGHLIGHT_RECTANGLE"
 };
-
-export const ButtonClickedAction = (userData) => {
-  Dispatcher.dispatch({
-    actionType: Actions.BUTTON_CLICKED, 
-    data: userData
-  });
-};
-
-export const CreateQueryAction = () => {
-  Dispatcher.dispatch({
-    actionType: Actions.NEW_QUERY,
-    data: {}
-  });
-};
-
-export const RemoveQueryAction = (queryId) => {
-  Dispatcher.dispatch({
-    actionType: Actions.REMOVE_QUERY,
-    data: {queryId: queryId}
-  });
-}
-
-export const RemoveQueryGroup = ( id ) => {
-  Dispatcher.dispatch({
-    actionType: Actions.REMOVE_QUERY_GROUP,
-    data: {queryGroupId: id}
-  });
-}
 
 export const DispatcherAction = ( action, userData ) => {
   Dispatcher.dispatch({

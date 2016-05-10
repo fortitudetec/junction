@@ -1,27 +1,40 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import semanticUI from '../react-semantic';
+import {Actions, DispatcherAction} from '../../actions';
 
 export default React.createClass({
   
+  //*****************************************************************************
+  //*****************************************************************************
   propTypes: {
     onChange: React.PropTypes.func,
-    bounds: React.PropTypes.object
+    bounds: React.PropTypes.object,
+    shapeId: React.PropTypes.string
   },
   
+  //*****************************************************************************
+  //*****************************************************************************
   componentDidMount ( ) {
   },
   
+  //*****************************************************************************
+  //*****************************************************************************
   _validateLatitude ( value ) {
     return /(^-?[0-9](\.\d+)*$)|(^-?[1-8][0-9](\.\d+)*$)|(^-?90(\.0+)*)$/.test(value);
   },
   
+  //*****************************************************************************
+  //*****************************************************************************
   didChange ( event ) {    
   },
   
+  //*****************************************************************************
+  //*****************************************************************************
   getInitialState ( ) {
     const bounds = this.boundsFromProps(this.props.bounds);
     return {
+      shapeId: this.props.shapeId,
       swLat: bounds.swLat,
       swLng: bounds.swLng,
       neLat: bounds.neLat, 
@@ -29,12 +42,16 @@ export default React.createClass({
     }
   },
   
+  //*****************************************************************************
+  //*****************************************************************************
   componentWillReceiveProps ( newProps ) {
     let state = this.state;
     state.bounds = this.boundsFromProps(newProps.bounds);
     this.setState(state);
   },
   
+  //*****************************************************************************
+  //*****************************************************************************
   boundsFromProps ( boundsObject ) {
     if ( boundsObject ) {
       let swLat = '';
@@ -59,9 +76,29 @@ export default React.createClass({
     return { sw: { lat: '', lng: '' }, ne: { lat: '', lng: '' } };
   },
   
+  //*****************************************************************************
+  //*****************************************************************************
+  _mouseEnter ( event ) {
+    DispatcherAction(Actions.HIGHLIGHT_RECTANGLE, {
+      shapeId: this.props.shapeId,
+      highlight: true
+    });
+  },
+  
+  //*****************************************************************************
+  //*****************************************************************************
+  _mouseLeave ( event ) {
+    DispatcherAction(Actions.HIGHLIGHT_RECTANGLE, {
+      shapeId: this.props.shapeId,
+      highlight: false
+    });
+  },
+  
+  //*****************************************************************************
+  //*****************************************************************************
   render ( ) { 
     return (
-      <div className="ui form">
+      <div className="ui form" onMouseEnter={this._mouseEnter} onMouseLeave={this._mouseLeave} >
         <div className="field">
           <label>Southwest Corner</label>
           <div className="two fields">
