@@ -60,6 +60,9 @@
     "testFileExtensions": [
       "js"
     ],
+    "modulePathIgnorePatterns": [
+      "/src\/semantic\/dist/"
+    ],
     "moduleFileExtensions": [
       "js",
       "json",

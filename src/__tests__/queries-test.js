@@ -133,6 +133,7 @@ describe('app', () => {
       
       beforeEach(() => {
         DispatcherAction(Actions.NEW_GEO_QUERY_SHAPE, {
+          valid: true,
           bounds: {
             sw: { lat: 1.0, lng: 1.0 },
             ne: { lat: 2.0, lng: 2.0 }

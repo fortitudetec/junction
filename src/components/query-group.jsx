@@ -54,8 +54,11 @@ export default React.createClass({
       break;
     case "geo":
       component = (
-        <GeoQuery onChange={this.geoQueryChange} key={query.id} id={query.id} queryGroupId={this.props.id} bounds={query.bounds} shapeId={query.shapeId} />
-      );
+        <GeoQuery key={query.id} 
+                  id={query.id} 
+                  queryGroupId={this.props.id} 
+                  bounds={query.bounds} 
+                  shapeId={query.shapeId} />);
       break;
     default:
       break;
@@ -93,17 +96,15 @@ export default React.createClass({
     DispatcherAction(Actions.NEW_QUERY_GROUP, null);
   },
   
-  geoQueryChanged ( ) {
-  },
-  
   render ( ) {  
     
     let tableSelector = null;
     tableSelector = <DataSource options={this.state.tables} label="Datasource" selected={this.dropDownItemSelected} />; 
     
     const queryRows = this.state.queries.map((query) => {
+      const rowKey = "row" + query.props.queryGroupId + "_" + query.props.id;
       return (
-        <tr key={_uniqueId()}>
+        <tr key={rowKey}>
           <td>
             {query}
           </td>

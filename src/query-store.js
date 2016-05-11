@@ -6,6 +6,8 @@ import _find from 'lodash/find';
 
 class QueryStore extends EventEmitter {
   
+  //*****************************************************************************
+  //*****************************************************************************
   constructor ( dispatcher ) {
     super();
     this._queries = [];
@@ -53,9 +55,27 @@ class QueryStore extends EventEmitter {
         break;
         
       case Actions.QUERY_CHANGED:
-        let changedElementId = payload.data.id;
-        let value = payload.data.newValue;
-        // self.emit(payload.actionType, se)
+        
+        // updating existing shape
+        if ( payload.data.shapeId && payload.data.shapeId !== undefined ) {
+          let existingQueries = this.queriesWithShape(payload.data.shapeId);
+          existingQueries.forEach((queryToUpdate) => {
+            this._updateQuery(queryToUpdate, payload.data);
+          })
+        } 
+        
+        // creating new shape (user inputted value to query)
+        else {
+          let qg = this.findQueryGroupById(payload.data.queryGroupId);
+          const idx = this.indexOfQueryInQueryGroup(payload.data.id, payload.data.queryGroupId)
+          if ( qg && idx >= 0 ) {
+            let query = qg.queries[idx];
+            this._updateQuery(query, payload.data);
+          }
+        }
+        
+        self.emit(payload.actionType, self._queryGroups);
+
         break;
         
       case Actions.NEW_GEO_QUERY_SHAPE:
@@ -67,12 +87,7 @@ class QueryStore extends EventEmitter {
         });
         
         self.emit(payload.actionType, self._queryGroups);
-        self.emit(Actions.SHOW_RECTANGLE, {
-          id: shapeId, 
-          sw: bounds.sw,
-          ne: bounds.ne
-        });
-        
+        this._showShapeForQuery({ valid: payload.data.valid, shapeId: shapeId, bounds: bounds });        
         break;
         
       case Actions.HIGHLIGHT_RECTANGLE:
@@ -85,6 +100,46 @@ class QueryStore extends EventEmitter {
     });
   }
   
+  //*****************************************************************************
+  //*****************************************************************************
+  _showShapeForQuery ( query ) {
+    if ( query.valid ) {
+      this.emit(Actions.SHOW_RECTANGLE, {
+        id: query.shapeId, 
+        sw: query.bounds.sw,
+        ne: query.bounds.ne
+      });  
+    }
+  }
+  
+  //*****************************************************************************
+  //*****************************************************************************
+  _queryChanged ( originalQuery, updatedQuery ) {
+    switch ( originalQuery.type ) {
+    case "geo":
+    
+      originalQuery.valid = updatedQuery.valid;
+      originalQuery.bounds = updatedQuery.bounds;
+      
+      // the the query already has a shape assigned to it
+      if ( originalQuery.shapeId ) {
+        // N/A
+      }
+      // otherwise create a new shape
+      else {
+        originalQuery.shapeId = _uniqueId();
+      }
+      
+      break;
+    default:
+      break;
+    }
+    
+    return originalQuery;
+  }
+  
+  //*****************************************************************************
+  //*****************************************************************************
   createQueryGroup ( ) {
     this._queryGroups.push({
       queryGroupId: _uniqueId(),
@@ -92,6 +147,8 @@ class QueryStore extends EventEmitter {
     });
   }
   
+  //*****************************************************************************
+  //*****************************************************************************
   findQueryGroupById ( id ) {    
     for ( const idx in this._queryGroups ) {
       const qg = this._queryGroups[idx];
@@ -103,6 +160,8 @@ class QueryStore extends EventEmitter {
     return null;
   }
   
+  //*****************************************************************************
+  //*****************************************************************************
   findQueryById ( id ) { 
     const foundQueries = this._queryGroups.map((qg) => {
       return qg.queries;
@@ -115,14 +174,35 @@ class QueryStore extends EventEmitter {
     return foundQueries;
   }
   
+  //*****************************************************************************
+  //*****************************************************************************
+  indexOfQueryInQueryGroup ( queryId, queryGroupId ) {
+    const qg = this.findQueryGroupById(queryGroupId);
+    if ( qg ) {
+      for ( let i = 0; i < qg.queries.length; i++ ) {
+        const query = qg.queries[i];
+        if ( query.id === queryId ) {
+          return i;
+        }
+      }
+    }
+    return -1;
+  }
+  
+  //*****************************************************************************
+  //*****************************************************************************
   queries ( ) {
     return this._queries;
   }
   
+  //*****************************************************************************
+  //*****************************************************************************
   queryGroups ( ) {
     return this._queryGroups;
   }
   
+  //*****************************************************************************
+  //*****************************************************************************
   queriesForGroup ( queryGroupId ) {
     const group = this.findQueryGroupById(queryGroupId);
     
@@ -249,6 +329,17 @@ class QueryStore extends EventEmitter {
     this._queries = [];
     this._queryGroups = [];
   }
+  
+  //*****************************************************************************
+  //*****************************************************************************
+  _updateQuery ( query, updates ) {
+    this._queryChanged(query, updates);
+    
+    if ( query.type === "geo" ) {
+      this._showShapeForQuery(query);
+    }
+  }
+  
 };
 
 export default (new QueryStore());

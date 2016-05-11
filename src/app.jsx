@@ -70,7 +70,19 @@ const App = React.createClass({
   //*****************************************************************************
   _addRectangleToMap ( rectangle ) {
     let state = this.state;
-    state.rectangles.push(rectangle);
+    
+    const existingRectangle = state.rectangles.find((element) => {
+      return element.id === rectangle.id;
+    });
+    
+    if ( existingRectangle !== undefined ) {
+      existingRectangle.sw = rectangle.sw;
+      existingRectangle.ne = rectangle.ne;
+    }
+    else {
+      state.rectangles.push(rectangle);
+    }
+    
     this.setState(state);
   },
   

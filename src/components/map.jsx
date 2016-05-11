@@ -111,7 +111,7 @@ export default React.createClass({
         }
       }
 
-      DispatcherAction(Actions.NEW_GEO_QUERY_SHAPE, { bounds: bounds });
+      DispatcherAction(Actions.NEW_GEO_QUERY_SHAPE, { valid: true, bounds: bounds });
     });
     
     map.on('draw:deleted', (e) => {

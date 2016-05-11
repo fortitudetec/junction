@@ -31,6 +31,7 @@ const Queries = React.createClass({
     this._queryStore.addListener(Actions.NEW_QUERY_GROUP, this._updateQueryGroups);
     this._queryStore.addListener(Actions.REMOVE_QUERY_GROUP, this._updateQueryGroups);
     this._queryStore.addListener(Actions.NEW_GEO_QUERY_SHAPE, this._updateQueryGroups);
+    this._queryStore.addListener(Actions.QUERY_CHANGED, this._updateQueryGroups);
 
     // create a default query when the component loads
     this._newQueryGroup();
