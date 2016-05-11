@@ -3,6 +3,7 @@ import { Actions } from './actions';
 import Dispatcher from './dispatcher';
 import _uniqueId from 'lodash/uniqueId';
 import _find from 'lodash/find';
+import QueryType from './query-type';
 
 class QueryStore extends EventEmitter {
   
@@ -83,7 +84,7 @@ class QueryStore extends EventEmitter {
         const shapeId = _uniqueId();
         
         self._queryGroups.forEach((queryGroup) => {
-          queryGroup.queries.push({id: _uniqueId(), queryGroupId: queryGroup.queryGroupId, shapeId: shapeId, type: "geo", bounds: bounds});
+          queryGroup.queries.push({id: _uniqueId(), queryGroupId: queryGroup.queryGroupId, shapeId: shapeId, type: QueryType.GEO, bounds: bounds});
         });
         
         self.emit(payload.actionType, self._queryGroups);
@@ -116,7 +117,7 @@ class QueryStore extends EventEmitter {
   //*****************************************************************************
   _queryChanged ( originalQuery, updatedQuery ) {
     switch ( originalQuery.type ) {
-    case "geo":
+    case QueryType.GEO:
     
       originalQuery.valid = updatedQuery.valid;
       originalQuery.bounds = updatedQuery.bounds;
@@ -335,7 +336,7 @@ class QueryStore extends EventEmitter {
   _updateQuery ( query, updates ) {
     this._queryChanged(query, updates);
     
-    if ( query.type === "geo" ) {
+    if ( query.type === QueryType.GEO ) {
       this._showShapeForQuery(query);
     }
   }

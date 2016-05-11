@@ -71,6 +71,23 @@ export default React.createClass({
   
   //*****************************************************************************
   //*****************************************************************************
+  _boundsFromLayer ( layer ) {
+    const bounds = {
+      sw: {
+        lat: layer.getBounds()._southWest.lat,
+        lng: layer.getBounds()._southWest.lng
+      },
+      ne: {
+        lat: layer.getBounds()._northEast.lat,
+        lng: layer.getBounds()._northEast.lng
+      }
+    }
+    
+    return bounds;
+  },
+  
+  //*****************************************************************************
+  //*****************************************************************************
   componentDidMount ( ) {
 
     L.mapbox.accessToken = 'pk.eyJ1IjoicHNjaG1lcmdlIiwiYSI6ImNpbWNtZ2ZjeTAwMTh0aWx2bG02bzgycXEifQ.MjkqAnyv1sXIxlOeTAkZKQ';
@@ -99,18 +116,7 @@ export default React.createClass({
     
     map.on('draw:created', (e) => {
       const layer = e.layer;
-
-      const bounds = {
-        sw: {
-          lat: layer.getBounds()._southWest.lat,
-          lng: layer.getBounds()._southWest.lng
-        },
-        ne: {
-          lat: layer.getBounds()._northEast.lat,
-          lng: layer.getBounds()._northEast.lng
-        }
-      }
-
+      const bounds = this._boundsFromLayer(layer);
       DispatcherAction(Actions.NEW_GEO_QUERY_SHAPE, { valid: true, bounds: bounds });
     });
     
@@ -124,6 +130,19 @@ export default React.createClass({
           DispatcherAction(Actions.REMOVE_QUERY, { id: layerToDelete.id });
         });
       });
+    });
+    
+    map.on('draw:edited', (e) => {
+      e.layers.eachLayer((layer) => {
+       const matchingLayers = this.state.rectangles.filter((rectangle) => {
+          return rectangle.layer._leaflet_id === layer._leaflet_id;
+        });
+        
+        matchingLayers.forEach((layerToUpdate) => {
+          const bounds = this._boundsFromLayer(layerToUpdate.layer);
+          DispatcherAction(Actions.QUERY_CHANGED, { valid: true, shapeId: layerToUpdate.id, bounds: bounds });
+        });
+      })
     });
     
     this.map = map;

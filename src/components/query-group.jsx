@@ -10,6 +10,7 @@ import CloseDiv from './close-div';
 import Button from './button';
 import _uniqueId from 'lodash/uniqueId';
 import semanticUI from './react-semantic';
+import QueryType from '../query-type';
 
 export default React.createClass({
 
@@ -42,17 +43,17 @@ export default React.createClass({
     let component = null;
     
     switch ( query.type ) {
-    case "text":
+    case QueryType.TEXT:
       component = (
         <QueryForm key={query.id} id={query.id} queryGroupId={this.props.id} />
       );
       break;
-    case "date":
+    case QueryType.DATE:
       component = (
         <DatePicker key={query.id} id={query.id} queryGroupId={this.props.id} />
       );
       break;
-    case "geo":
+    case QueryType.GEO:
       component = (
         <GeoQuery key={query.id} 
                   id={query.id} 
